@@ -30,7 +30,7 @@ environ.Env.read_env(str(BASE_DIR / ".env"))
 DEBUG = env.bool("DEBUG", True)
 SITE_URL = env.str("SITE_URL", "http://127.0.0.1:8002")
 STATIC_URL = env.str("STATIC_URL", "/static/")
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
