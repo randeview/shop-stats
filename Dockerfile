@@ -53,10 +53,15 @@ RUN pip install --upgrade pip && \
 # ---------- Runtime ----------
 FROM base AS runtime
 
+# Re-declare build args for this stage
+ARG uid=1000
+ARG guid=${uid}
+ARG user=appuser
+
 # Copy venv with installed packages
 COPY --from=build /venv /venv
 
-# Copy project code
+# Copy project code with correct ownership
 COPY --chown=${user}:${user} . /app
 
 # Entrypoint scripts
@@ -66,5 +71,4 @@ USER ${user}:${user}
 EXPOSE 8000
 
 ENV GUNICORN_CMD_ARGS="--bind 0.0.0.0:8000 --workers 3 --timeout 60 --access-logfile - --error-logfile -"
-
 CMD ["gunicorn", "config.wsgi"]
