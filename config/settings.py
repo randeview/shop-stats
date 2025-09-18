@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "rest_framework.authtoken",
     "app.users",
+    "app.catalog",
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "drf_spectacular_sidecar",
@@ -233,8 +234,10 @@ JAZZMIN_SETTINGS = {
     "related_modal_active": True,
     # Icons (FontAwesome)
     "icons": {
-        "users.user": "fas fa-user",
+        "users.User": "fas fa-user",
         "auth.Group": "fas fa-users",
+        "catalog.Category": "fas fa-sitemap",
+        "catalog.Product": "fas fa-box",
         "sales.Sale": "fas fa-chart-line",
         "ingestion.Upload": "fas fa-file-upload",
     },
@@ -243,7 +246,7 @@ JAZZMIN_SETTINGS = {
     "changeform_format_overrides": {
         "auth.user": "collapsible",
     },
-    "order_with_respect_to": ["auth", "users"],
+    "order_with_respect_to": ["auth", "users", "catalog"],
 }
 
 LANGUAGES = [

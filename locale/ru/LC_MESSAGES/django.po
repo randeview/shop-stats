@@ -3,16 +3,15 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-18 13:54+0000\n"
+"POT-Creation-Date: 2025-09-18 15:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -20,40 +19,140 @@ msgstr ""
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
 
+#: app/catalog/admin.py:14
+msgid "level"
+msgstr "уровень"
+
+#: app/catalog/apps.py:7
+msgid "Catalog"
+msgstr "Каталог"
+
+#: app/catalog/models.py:17
+msgid "Category depth cannot exceed 3 levels."
+msgstr "Глубина категорий не может превышать 3 уровней."
+
+#: app/catalog/models.py:21 app/catalog/models.py:81
+msgid "name"
+msgstr "название"
+
+#: app/catalog/models.py:22 app/catalog/models.py:82
+msgid "slug"
+msgstr "слаг"
+
+#: app/catalog/models.py:25
+msgid "parent"
+msgstr "родительская категория"
+
+#: app/catalog/models.py:33
+msgid "Category"
+msgstr "Категория"
+
+#: app/catalog/models.py:34
+msgid "Categories"
+msgstr "Категории"
+
+#: app/catalog/models.py:48
+msgid "Category cannot be its own ancestor."
+msgstr "Категория не может быть своим собственным предком."
+
+#: app/catalog/models.py:50
+msgid "Circular parent relationship detected."
+msgstr "Обнаружена циклическая связь родителя."
+
+#: app/catalog/models.py:77
+msgid "category"
+msgstr "категория"
+
+#: app/catalog/models.py:83
+msgid "photo URL"
+msgstr "ссылка на фото"
+
+#: app/catalog/models.py:87
+msgid "absolute position"
+msgstr "абсолютная позиция"
+
+#: app/catalog/models.py:87
+msgid "Smaller number shows first"
+msgstr "Меньшее число отображается раньше"
+
+#: app/catalog/models.py:90
+msgid "price"
+msgstr "цена"
+
+#: app/catalog/models.py:91
+msgid "sellers (count)"
+msgstr "количество продавцов"
+
+#: app/catalog/models.py:92
+msgid "sales last 30 days"
+msgstr "продажи за последние 30 дней"
+
+#: app/catalog/models.py:93
+msgid "reviews (count)"
+msgstr "количество отзывов"
+
+#: app/catalog/models.py:95
+msgid "rating"
+msgstr "рейтинг"
+
+#: app/catalog/models.py:100
+msgid "Max 5.0"
+msgstr "Максимум 5.0"
+
+#: app/catalog/models.py:103
+msgid "weight (kg)"
+msgstr "вес (кг)"
+
+#: app/catalog/models.py:110
+msgid "created at"
+msgstr "дата создания"
+
+#: app/catalog/models.py:111
+msgid "updated at"
+msgstr "дата обновления"
+
+#: app/catalog/models.py:114
+msgid "Product"
+msgstr "Товар"
+
+#: app/catalog/models.py:115
+msgid "Products"
+msgstr "Товары"
+
 #: app/common/validators.py:7
 msgid ""
 "Wrong phone_number format, it should start with '+' sign and has 11 digits. "
 "Example: '+77777777777'"
-msgstr ""
+msgstr "Неверный формат номера телефона, он должен начинаться со знака '+' и содержать 11 цифр. Пример: '+77777777777'"
 
 #: app/users/models.py:13
 msgid "phone number"
-msgstr "Номер телефона"
+msgstr "номер телефона"
 
-#: app/users/models.py:19
+#: app/users/models.py:21
 msgid "User"
 msgstr "Пользователь"
 
-#: app/users/models.py:20
+#: app/users/models.py:22
 msgid "Users"
 msgstr "Пользователи"
 
-#: config/settings.py:207
+#: config/settings.py:209
 msgid "Shop Analytics Admin"
 msgstr "Админ панель аналитики продаж"
 
-#: config/settings.py:208 config/settings.py:209
+#: config/settings.py:210 config/settings.py:211
 msgid "Shop Analytics"
 msgstr "Аналитика продаж"
 
-#: config/settings.py:210
+#: config/settings.py:212
 msgid "Welcome to Shop Analytics Admin"
 msgstr "Добро пожаловать в админ панель"
 
-#: config/settings.py:249
+#: config/settings.py:251
 msgid "Kazakh"
 msgstr "Казахский"
 
-#: config/settings.py:250
+#: config/settings.py:252
 msgid "Russian"
-msgstr "Руский"
+msgstr "Русский"
