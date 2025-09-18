@@ -199,3 +199,4 @@ cmake-build-*/
 staticfiles/
 *.DS_Store
 var
+.bash_history
