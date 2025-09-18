@@ -5,46 +5,11 @@ from django_filters.rest_framework import (
     NumberFilter,
 )
 from drf_spectacular.utils import OpenApiParameter, OpenApiTypes, extend_schema
-from rest_framework import filters, generics, permissions, serializers
-from rest_framework.permissions import AllowAny
+from rest_framework import filters, generics, permissions
 
-from .models import Category, Product
-
-
-class CategoryTreeSerializer(serializers.ModelSerializer):
-    children = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Category
-        fields = ("id", "name", "slug", "level", "children")
-
-    def get_children(self, obj):
-        if obj.children.exists():
-            return CategoryTreeSerializer(obj.children.all(), many=True).data
-        return []
-
-
-class ProductSerializer(serializers.ModelSerializer):
-    category_name = serializers.CharField(source="category.name", read_only=True)
-
-    class Meta:
-        model = Product
-        fields = (
-            "id",
-            "name",
-            "slug",
-            "photo_url",
-            "category",
-            "category_name",
-            "absolute_position",
-            "price",
-            "sellers_count",
-            "sales_30d",
-            "reviews_count",
-            "rating",
-            "weight_kg",
-            "created_at",
-        )
+from app.catalog.models import Category, Product
+from app.catalog.serializers import CategoryTreeSerializer, ProductSerializer
+from app.common.permissions import DeviceBound
 
 
 @extend_schema(
@@ -54,7 +19,7 @@ class ProductSerializer(serializers.ModelSerializer):
     responses=CategoryTreeSerializer(many=True),
 )
 class CategoryTreeView(generics.ListAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.IsAuthenticated, DeviceBound]
     serializer_class = CategoryTreeSerializer
 
     def get_queryset(self):
@@ -106,7 +71,7 @@ class ProductFilter(FilterSet):
     responses=ProductSerializer(many=True),
 )
 class ProductListView(generics.ListAPIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated, DeviceBound]
     serializer_class = ProductSerializer
     filter_backends = [
         DjangoFilterBackend,
