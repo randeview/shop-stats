@@ -15,6 +15,11 @@ class User(AbstractUser):
         validators=[phone_number_validator],
         blank=True,
     )
+    device_id = models.CharField(max_length=128, unique=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name = _("User")
+        verbose_name_plural = _("Users")
 
     def bump_token_version(self):
         self.token_version = (self.token_version or 0) + 1

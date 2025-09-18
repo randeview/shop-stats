@@ -4,6 +4,8 @@ from rest_framework import generics, permissions, serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from ..common.exceptions import DeviceAlreadyRegistered
+from ..common.permissions import DeviceBound
 from ..common.validators import phone_number_validator
 from .jwt import make_tokens_for_user
 
@@ -14,10 +16,18 @@ class RegisterView(generics.CreateAPIView):
     class RegisterSerializer(serializers.ModelSerializer):
         password = serializers.CharField(write_only=True, min_length=6)
         phone_number = serializers.CharField(validators=[phone_number_validator])
+        device_id = serializers.CharField(max_length=128)
 
         class Meta:
             model = User
-            fields = ("id", "phone_number", "first_name", "last_name", "password")
+            fields = (
+                "id",
+                "phone_number",
+                "first_name",
+                "last_name",
+                "password",
+                "device_id",
+            )
 
         def create(self, validated_data):
             phone_number = validated_data["phone_number"]
@@ -31,6 +41,7 @@ class RegisterView(generics.CreateAPIView):
                 first_name=validated_data.get("first_name", ""),
                 last_name=validated_data.get("last_name", ""),
                 password=validated_data["password"],
+                device_id=validated_data["device_id"],
             )
 
     queryset = User.objects.all()
@@ -44,6 +55,7 @@ class LoginView(APIView):
     class InputSerializer(serializers.Serializer):
         username = serializers.CharField()
         password = serializers.CharField(write_only=True)
+        device_id = serializers.CharField(max_length=128)
 
         def validate(self, attrs):
             user = authenticate(username=attrs["username"], password=attrs["password"])
@@ -51,6 +63,10 @@ class LoginView(APIView):
                 raise serializers.ValidationError("Invalid credentials")
             if not user.is_active:
                 raise serializers.ValidationError("User is inactive")
+            incoming_device_id = attrs["device_id"]
+            current_device_id = getattr(user, "device_id", None)
+            if current_device_id and current_device_id != incoming_device_id:
+                raise DeviceAlreadyRegistered()
             attrs["user"] = user
             return attrs
 
@@ -65,12 +81,19 @@ class LoginView(APIView):
         request=InputSerializer, responses={status.HTTP_200_OK: OutputSerializer}
     )
     def post(self, request):
-        serializer = self.InputSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data["user"]
+        ser = self.InputSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        user = ser.validated_data["user"]
+        incoming_device_id = ser.validated_data["device_id"]
+        if not getattr(user, "device_id", None):
+            user.device_id = incoming_device_id
+            user.save(update_fields=["device_id"])
         user.bump_token_version()
-        refresh, access = make_tokens_for_user(user)
-        return Response({"refresh": refresh, "access": access})
+        refresh, access = make_tokens_for_user(user, incoming_device_id)
+        return Response(
+            {"refresh_token": refresh, "access_token": access},
+            status=status.HTTP_200_OK,
+        )
 
 
 class LogoutView(APIView):
@@ -81,10 +104,19 @@ class LogoutView(APIView):
 
 
 class ProfileView(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated, DeviceBound]
+
     class OutputSerializer(serializers.ModelSerializer):
         class Meta:
             model = User
-            fields = ("id", "username", "phone_number", "first_name", "last_name")
+            fields = (
+                "id",
+                "username",
+                "phone_number",
+                "first_name",
+                "last_name",
+                "device_id",
+            )
 
     serializer_class = OutputSerializer
 

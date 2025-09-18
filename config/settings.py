@@ -14,6 +14,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import environ
+from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -59,6 +60,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -134,7 +136,7 @@ DATABASES = get_database_config(
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "kk"
 
 TIME_ZONE = "UTC"
 
@@ -166,7 +168,6 @@ REST_FRAMEWORK = {
         "user": "120/min",
     },
 }
-
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
@@ -204,10 +205,10 @@ SPECTACULAR_SETTINGS = {
 }
 
 JAZZMIN_SETTINGS = {
-    "site_title": "Shop Analytics Admin",
-    "site_header": "Shop Analytics",
-    "site_brand": "Shop Analytics",
-    "welcome_sign": "Welcome to Shop Analytics Admin",
+    "site_title": _("Shop Analytics Admin"),
+    "site_header": _("Shop Analytics"),
+    "site_brand": _("Shop Analytics"),
+    "welcome_sign": _("Welcome to Shop Analytics Admin"),
     "copyright": "© Shop Analytics",
     # Logos (optional)
     # Put files into STATIC and run collectstatic
@@ -232,7 +233,7 @@ JAZZMIN_SETTINGS = {
     "related_modal_active": True,
     # Icons (FontAwesome)
     "icons": {
-        "auth.user": "fas fa-user",
+        "users.user": "fas fa-user",
         "auth.Group": "fas fa-users",
         "sales.Sale": "fas fa-chart-line",
         "ingestion.Upload": "fas fa-file-upload",
@@ -242,4 +243,13 @@ JAZZMIN_SETTINGS = {
     "changeform_format_overrides": {
         "auth.user": "collapsible",
     },
+    "order_with_respect_to": ["auth", "users"],
 }
+
+LANGUAGES = [
+    ("kk", _("Kazakh")),
+    ("ru", _("Russian")),
+]
+
+# Where *.po files will live
+LOCALE_PATHS = [BASE_DIR / "locale"]

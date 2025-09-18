@@ -1,16 +1,17 @@
 # users/jwt.py
-from django.contrib.auth import get_user_model
 from rest_framework import exceptions
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 
-User = get_user_model()
+from app.users.models import User
 
 
-def make_tokens_for_user(user: User):
+def make_tokens_for_user(user: User, incoming_device_id: str):
     refresh = RefreshToken.for_user(user)
+    refresh["did"] = incoming_device_id
     refresh["token_version"] = user.token_version
     access = refresh.access_token
+    access["did"] = incoming_device_id
     access["token_version"] = user.token_version
     return str(refresh), str(access)
 

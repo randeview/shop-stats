@@ -16,6 +16,7 @@ RUN set -eux; \
     apt-get install -y --no-install-recommends \
         libpq5 \
         ca-certificates \
+        gettext \
     ; \
     rm -rf /var/lib/apt/lists/*
 
