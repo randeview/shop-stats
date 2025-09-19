@@ -1,0 +1,25 @@
+{# templates/admin/users/user/change_form.html #}
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+{{ block.super }}
+{% if change and original %}
+<div class="form-group mt-3">
+    <button type="submit" name="unblock-user" class="btn btn-outline-success btn-lg w-100"
+            onclick="return confirm('Вы уверены, что хотите разблокировать пользователя?');">
+        🔓 Разблокировать
+    </button>
+</div>
+<li>
+    <a class="button" href="{% url 'admin:users_user_mark_paid' original.pk %}">
+        {% trans "Mark PAID" %}
+    </a>
+</li>
+<li>
+    <a class="button" href="{% url 'admin:users_user_reset_device' original.pk %}">
+        {% trans "Reset device" %}
+    </a>
+</li>
+{% endif %}
+{% endblock %}

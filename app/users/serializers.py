@@ -99,4 +99,5 @@ class ProfileOutputSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "device_id",
+            "payment_status",
         )

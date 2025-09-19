@@ -6,3 +6,9 @@ class DeviceAlreadyRegistered(APIException):
     status_code = status.HTTP_409_CONFLICT
     default_detail = "Account already registered on another device."
     default_code = "device_conflict"
+
+
+class DeviceRegisteredAnotherUser(APIException):
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = "Device registered on another user."
+    default_code = "device_conflict"

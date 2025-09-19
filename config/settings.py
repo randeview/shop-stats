@@ -69,7 +69,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [str(BASE_DIR / "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -78,10 +78,12 @@ TEMPLATES = [
                 # 'django.contrib.users.context_processors.users',
                 "django.contrib.messages.context_processors.messages",
                 "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
+
 
 WSGI_APPLICATION = "config.wsgi.application"
 

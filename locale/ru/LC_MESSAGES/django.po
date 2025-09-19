@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-18 15:36+0000\n"
+"POT-Creation-Date: 2025-09-19 15:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,13 +19,17 @@ msgstr ""
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
 
-#: app/catalog/admin.py:14
+#: app/catalog/admin.py:17
 msgid "level"
 msgstr "уровень"
 
-#: app/catalog/apps.py:7
+#: app/catalog/apps.py:8
 msgid "Catalog"
 msgstr "Каталог"
+
+#: app/catalog/management/commands/seed_catalog.py:11
+msgid "Seed 3 categories and 10 demo products"
+msgstr "Создать 3 категории и 10 демо-товаров"
 
 #: app/catalog/models.py:17
 msgid "Category depth cannot exceed 3 levels."
@@ -75,47 +79,47 @@ msgstr "абсолютная позиция"
 msgid "Smaller number shows first"
 msgstr "Меньшее число отображается раньше"
 
-#: app/catalog/models.py:90
+#: app/catalog/models.py:91
 msgid "price"
 msgstr "цена"
 
-#: app/catalog/models.py:91
+#: app/catalog/models.py:93
 msgid "sellers (count)"
 msgstr "количество продавцов"
 
-#: app/catalog/models.py:92
+#: app/catalog/models.py:94
 msgid "sales last 30 days"
 msgstr "продажи за последние 30 дней"
 
-#: app/catalog/models.py:93
+#: app/catalog/models.py:95
 msgid "reviews (count)"
 msgstr "количество отзывов"
 
-#: app/catalog/models.py:95
+#: app/catalog/models.py:97
 msgid "rating"
 msgstr "рейтинг"
 
-#: app/catalog/models.py:100
+#: app/catalog/models.py:102
 msgid "Max 5.0"
 msgstr "Максимум 5.0"
 
-#: app/catalog/models.py:103
+#: app/catalog/models.py:105
 msgid "weight (kg)"
 msgstr "вес (кг)"
 
-#: app/catalog/models.py:110
+#: app/catalog/models.py:112
 msgid "created at"
 msgstr "дата создания"
 
-#: app/catalog/models.py:111
+#: app/catalog/models.py:113
 msgid "updated at"
 msgstr "дата обновления"
 
-#: app/catalog/models.py:114
+#: app/catalog/models.py:116
 msgid "Product"
 msgstr "Товар"
 
-#: app/catalog/models.py:115
+#: app/catalog/models.py:117
 msgid "Products"
 msgstr "Товары"
 
@@ -123,36 +127,147 @@ msgstr "Товары"
 msgid ""
 "Wrong phone_number format, it should start with '+' sign and has 11 digits. "
 "Example: '+77777777777'"
-msgstr "Неверный формат номера телефона, он должен начинаться со знака '+' и содержать 11 цифр. Пример: '+77777777777'"
+msgstr ""
+"Неверный формат номера телефона, он должен начинаться со знака '+' и "
+"содержать 11 цифр. Пример: '+77777777777'"
 
-#: app/users/models.py:13
+#: app/users/admin.py:17
+msgid "Статус оплаты"
+msgstr "Статус оплаты"
+
+#: app/users/admin.py:18
+msgid "Устройство"
+msgstr "Устройство"
+
+#: app/users/admin.py:26
+msgid "Mark selected users as PAID"
+msgstr "Отметить выбранных пользователей как Оплачено"
+
+#: app/users/admin.py:34
+#, python-format
+msgid "%(count)d user(s) marked as PAID"
+msgstr "%(count)d пользователь(ей) отмечен(ы) как Оплачено"
+
+#: app/users/admin.py:36
+msgid "Mark selected users as NOT PAID"
+msgstr "Отметить выбранных пользователей как Не оплачено"
+
+#: app/users/admin.py:39
+#, python-format
+msgid "%(count)d user(s) marked as NOT PAID"
+msgstr "%(count)d пользователь(ей) отмечен(ы) как Не оплачено"
+
+#: app/users/admin.py:41
+msgid "Reset device (allow re-login on new device)"
+msgstr "Сбросить устройство (разрешить вход на новом устройстве)"
+
+#: app/users/admin.py:51
+#, python-format
+msgid "%(count)d user(s) device reset"
+msgstr "%(count)d пользователь(ей): устройство сброшено"
+
+#: app/users/admin.py:72 app/users/admin.py:84
+msgid "No permission"
+msgstr "Нет прав"
+
+#: app/users/admin.py:78
+msgid "Device reset"
+msgstr "Устройство сброшено"
+
+#: app/users/admin.py:89
+msgid "User marked as PAID"
+msgstr "Пользователь отмечен как Оплачено"
+
+#: app/users/models.py:11
+msgid "Not paid"
+msgstr "Не оплачено"
+
+#: app/users/models.py:12
+msgid "Paid"
+msgstr "Оплачено"
+
+#: app/users/models.py:15
 msgid "phone number"
 msgstr "номер телефона"
 
-#: app/users/models.py:21
+#: app/users/models.py:22
+msgid "payment status"
+msgstr "статус оплаты"
+
+#: app/users/models.py:30
 msgid "User"
 msgstr "Пользователь"
 
-#: app/users/models.py:22
+#: app/users/models.py:31
 msgid "Users"
 msgstr "Пользователи"
 
-#: config/settings.py:209
-msgid "Shop Analytics Admin"
-msgstr "Админ панель аналитики продаж"
+#: app/users/serializers.py:32
+msgid "User with this phone number already exists."
+msgstr "Пользователь с таким номером уже существует"
 
-#: config/settings.py:210 config/settings.py:211
+#: app/users/serializers.py:57
+msgid "Invalid credentials"
+msgstr "Неправильный логин или пароль"
+
+#: app/users/serializers.py:58
+msgid "User is inactive"
+msgstr "Пользователь не активен"
+
+#: app/users/views.py:23
+msgid "User registration"
+msgstr "Регистрация пользователя"
+
+#: app/users/views.py:27
+msgid "Validation error"
+msgstr "Ошибка валидации"
+
+#: app/users/views.py:39
+msgid "User login"
+msgstr "Вход пользователя"
+
+#: app/users/views.py:73
+msgid "User logout (invalidate tokens)"
+msgstr "Выход (аннулирование токенов)"
+
+#: app/users/views.py:75
+msgid "No content"
+msgstr "Нет содержимого"
+
+#: app/users/views.py:88
+msgid "User profile"
+msgstr "Профиль пользователя"
+
+#: config/settings.py:211
+msgid "Shop Analytics Admin"
+msgstr "Админ-панель аналитики продаж"
+
+#: config/settings.py:212 config/settings.py:213
 msgid "Shop Analytics"
 msgstr "Аналитика продаж"
 
-#: config/settings.py:212
+#: config/settings.py:214
 msgid "Welcome to Shop Analytics Admin"
-msgstr "Добро пожаловать в админ панель"
+msgstr "Добро пожаловать в админ-панель"
 
-#: config/settings.py:251
+#: config/settings.py:255
 msgid "Kazakh"
 msgstr "Казахский"
 
-#: config/settings.py:252
+#: config/settings.py:256
 msgid "Russian"
 msgstr "Русский"
+
+#: templates/admin/user_change.html:16
+msgid "Mark PAID"
+msgstr "Отметить как Оплачено"
+
+#: templates/admin/user_change.html:21
+msgid "Reset device"
+msgstr "Сбросить устройство"
+
+#~ msgid "Payment status"
+#~ msgstr "Статус оплаты"
+
+#~ msgid "Service"
+#~ msgstr "Сервис"

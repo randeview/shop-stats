@@ -5,6 +5,7 @@ from rest_framework import generics, permissions, status, throttling
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from app.common.exceptions import DeviceRegisteredAnotherUser
 from app.common.permissions import DeviceBound
 from app.users.jwt import make_tokens_for_user
 from app.users.serializers import (
@@ -52,6 +53,8 @@ class LoginView(APIView):
         incoming_device_id = ser.validated_data["device_id"]
 
         if not getattr(user, "device_id", None):
+            if User.objects.filter(device_id=incoming_device_id).exists():
+                raise DeviceRegisteredAnotherUser()
             user.device_id = incoming_device_id
             user.save(update_fields=["device_id"])
 
