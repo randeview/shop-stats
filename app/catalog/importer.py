@@ -61,6 +61,8 @@ def import_categories_from_xlsx(file_obj, sheet_name: Optional[str] = None) -> i
                 lvl2 = _norm(row[c2_idx])
                 lvl3 = _norm(row[c3_idx])
 
+                if lvl1 == "PARENT_CATEGORY":
+                    continue
                 # Level 1
                 c1, was_created = Category.objects.get_or_create(
                     parent=None,
