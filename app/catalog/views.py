@@ -9,7 +9,7 @@ from rest_framework import filters, generics, permissions
 
 from app.catalog.models import Category, Product
 from app.catalog.serializers import CategoryTreeSerializer, ProductSerializer
-from app.common.permissions import DeviceBound
+from app.common.permissions import DeviceBound, HasPaidService
 
 
 @extend_schema(
@@ -19,7 +19,8 @@ from app.common.permissions import DeviceBound
     responses=CategoryTreeSerializer(many=True),
 )
 class CategoryTreeView(generics.ListAPIView):
-    permission_classes = [permissions.IsAuthenticated, DeviceBound]
+    # permission_classes = [permissions.IsAuthenticated, DeviceBound, HasPaidService]
+    permission_classes = [permissions.AllowAny]
     serializer_class = CategoryTreeSerializer
 
     def get_queryset(self):
@@ -71,7 +72,8 @@ class ProductFilter(FilterSet):
     responses=ProductSerializer(many=True),
 )
 class ProductListView(generics.ListAPIView):
-    permission_classes = [permissions.IsAuthenticated, DeviceBound]
+    # permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated, DeviceBound, HasPaidService]
     serializer_class = ProductSerializer
     filter_backends = [
         DjangoFilterBackend,
