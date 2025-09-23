@@ -1,5 +1,4 @@
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -78,36 +77,16 @@ class Product(models.Model):
         on_delete=models.PROTECT,
         related_name="products",
     )
+    merchant_name = models.CharField(
+        _("merchant name"), max_length=512, blank=True, null=True
+    )
     name = models.CharField(_("name"), max_length=255)
-    slug = models.SlugField(_("slug"), max_length=255, unique=True)
-    photo_url = models.URLField(_("photo URL"), max_length=1000, blank=True)
-
-    # Позиция товара (для ручной сортировки)
-    absolute_position = models.PositiveIntegerField(
-        _("absolute position"), default=0, help_text=_("Smaller number shows first")
+    photo_url = models.URLField(_("photo URL"), max_length=1000, blank=True, null=True)
+    article_id = models.CharField(
+        _("article ID"), max_length=255, blank=True, null=True
     )
-
-    price = models.DecimalField(
-        _("price"), max_digits=12, decimal_places=2, validators=[MinValueValidator(0)]
-    )
-    sellers_count = models.PositiveIntegerField(_("sellers (count)"), default=0)
-    sales_30d = models.PositiveIntegerField(_("sales last 30 days"), default=0)
-    reviews_count = models.PositiveIntegerField(_("reviews (count)"), default=0)
-    rating = models.DecimalField(
-        _("rating"),
-        max_digits=2,
-        decimal_places=1,
-        default=0,
-        validators=[MinValueValidator(0), MaxValueValidator(5)],
-        help_text=_("Max 5.0"),
-    )
-    weight_kg = models.DecimalField(
-        _("weight (kg)"),
-        max_digits=6,
-        decimal_places=3,
-        validators=[MinValueValidator(0)],
-        default=0,
-    )
+    product_count = models.PositiveIntegerField(_("count"), default=0)
+    product_orders = models.PositiveIntegerField(_("product orders"), default=0)
 
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
     updated_at = models.DateTimeField(_("updated at"), auto_now=True)
@@ -115,12 +94,11 @@ class Product(models.Model):
     class Meta:
         verbose_name = _("Product")
         verbose_name_plural = _("Products")
-        ordering = ["absolute_position", "id"]
+        ordering = ["id"]
         indexes = [
-            models.Index(fields=["category", "absolute_position"]),
+            models.Index(fields=["category"]),
+            models.Index(fields=["article_id"]),
             models.Index(fields=["name"]),
-            models.Index(fields=["-sales_30d"]),
-            models.Index(fields=["-rating"]),
         ]
 
     def __str__(self):

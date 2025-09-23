@@ -7,7 +7,7 @@ from django.db import transaction
 from openpyxl import load_workbook
 from slugify import slugify
 
-from .models import Category
+from .models import Category, Product
 
 
 def _norm(val) -> Optional[str]:
@@ -46,6 +46,11 @@ def import_categories_from_xlsx(file_obj, sheet_name: Optional[str] = None) -> i
             p_idx = header.index("PARENT_CATEGORY")
             c2_idx = header.index("CATEGORY_2LVL")
             c3_idx = header.index("CATEGORY_3LVL")
+            c4_idx = header.index("MERCHANT_NAME")
+            c5_idx = header.index("PRODUCT")
+            c6_idx = header.index("SKU")
+            c7_idx = header.index("Кол-во товаров")
+            c8_idx = header.index("Кол-во заказов")
         except ValueError:
             wb.close()
             raise ValueError(
@@ -53,13 +58,20 @@ def import_categories_from_xlsx(file_obj, sheet_name: Optional[str] = None) -> i
             )
 
         # Import rows
+        counter = 0
         with transaction.atomic():
             for row in ws.iter_rows(values_only=True):
+                counter += 1
                 lvl1 = _norm(row[p_idx])
                 if not lvl1:
                     continue
                 lvl2 = _norm(row[c2_idx])
                 lvl3 = _norm(row[c3_idx])
+                merchant_name = _norm(row[c4_idx])
+                product_name = _norm(row[c5_idx])
+                article_id = _norm(row[c6_idx])
+                product_count = _norm(row[c7_idx])
+                product_orders = _norm(row[c8_idx])
 
                 if lvl1 == "PARENT_CATEGORY":
                     continue
@@ -86,13 +98,29 @@ def import_categories_from_xlsx(file_obj, sheet_name: Optional[str] = None) -> i
 
                 # Level 3 (optional; only if level 2 exists)
                 if lvl3 and c2:
-                    _, was_created = Category.objects.get_or_create(
+                    c3, was_created = Category.objects.get_or_create(
                         parent=c2,
                         slug=slugify(lvl3),
                         defaults={"name": lvl3},
                     )
                     if was_created:
                         created += 1
+                else:
+                    c3 = Category.objects.get(name=lvl3)
+                if not Product.objects.filter(
+                    article_id=article_id, merchant_name=merchant_name
+                ).exists():
+                    product = Product.objects.create(
+                        name=product_name,
+                        category=c3,
+                        merchant_name=merchant_name,
+                        article_id=article_id,
+                        product_count=product_count,
+                        product_orders=product_orders,
+                    )
+                    product.save()
+                if counter > 1000:
+                    break
 
         wb.close()
         return created

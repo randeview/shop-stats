@@ -9,7 +9,6 @@ from rest_framework import filters, generics, permissions
 
 from app.catalog.models import Category, Product
 from app.catalog.serializers import CategoryTreeSerializer, ProductSerializer
-from app.common.permissions import DeviceBound, HasPaidService
 
 
 @extend_schema(
@@ -72,8 +71,8 @@ class ProductFilter(FilterSet):
     responses=ProductSerializer(many=True),
 )
 class ProductListView(generics.ListAPIView):
-    # permission_classes = [permissions.AllowAny]
-    permission_classes = [permissions.IsAuthenticated, DeviceBound, HasPaidService]
+    permission_classes = [permissions.AllowAny]
+    # permission_classes = [permissions.IsAuthenticated, DeviceBound, HasPaidService]
     serializer_class = ProductSerializer
     filter_backends = [
         DjangoFilterBackend,
@@ -81,15 +80,11 @@ class ProductListView(generics.ListAPIView):
         filters.OrderingFilter,
     ]
     filterset_class = ProductFilter
-    search_fields = ["name", "slug", "category__name"]
+    search_fields = ["name", "category__name"]
     ordering_fields = [
-        "absolute_position",
-        "price",
-        "sales_30d",
-        "rating",
         "created_at",
     ]
-    ordering = ["absolute_position", "id"]
+    ordering = ["id"]
 
     def get_queryset(self):
         # Keep it efficient

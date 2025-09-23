@@ -9,8 +9,7 @@ from .models import Category, Product
 
 
 class CategoryImportForm(forms.Form):
-    file = forms.FileField(label="XLSX file")
-    sheet_name = forms.CharField(label="Sheet name", required=False)
+    file = forms.FileField(label="XLSX файл")
 
 
 @admin.register(Category)
@@ -19,7 +18,25 @@ class CategoryAdmin(admin.ModelAdmin):
     list_filter = ("parent",)
     search_fields = ("name", "slug")
     prepopulated_fields = {"slug": ("name",)}
-    change_list_template = "admin/category_list_change.html"
+
+    def level(self, obj):
+        return obj.level
+
+    level.short_description = _("level")
+
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "category",
+        "merchant_name",
+        "article_id",
+    )
+    list_filter = ("category",)
+    search_fields = ("name",)
+    autocomplete_fields = ("category",)
+    change_list_template = "admin/product_list_change.html"
 
     def get_urls(self):
         urls = super().get_urls()
@@ -27,7 +44,7 @@ class CategoryAdmin(admin.ModelAdmin):
             path(
                 "import-xlsx/",
                 self.admin_site.admin_view(self.import_xlsx_view),
-                name="catalog_category_import",
+                name="catalog_category_product_import",
             ),
         ]
         return custom + urls
@@ -35,7 +52,7 @@ class CategoryAdmin(admin.ModelAdmin):
     def import_xlsx_view(self, request):
         if not self.has_change_permission(request):
             self.message_user(request, _("No permission"), level=messages.ERROR)
-            return redirect("admin:catalog_category_changelist")
+            return redirect("admin:catalog_product_changelist")
 
         if request.method == "POST":
             form = CategoryImportForm(request.POST, request.FILES)
@@ -52,7 +69,7 @@ class CategoryAdmin(admin.ModelAdmin):
                     % {"count": created},
                     level=messages.SUCCESS,
                 )
-                return redirect("admin:catalog_category_changelist")
+                return redirect("admin:catalog_product_changelist")
 
         else:
             form = CategoryImportForm()
@@ -63,25 +80,3 @@ class CategoryAdmin(admin.ModelAdmin):
             form=form,
         )
         return render(request, "admin/import_xlsx.html", context)
-
-    def level(self, obj):
-        return obj.level
-
-    level.short_description = _("level")
-
-
-@admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "category",
-        "price",
-        "absolute_position",
-        "rating",
-        "sales_30d",
-    )
-    list_filter = ("category",)
-    search_fields = ("name", "slug")
-    list_editable = ("absolute_position", "price")
-    prepopulated_fields = {"slug": ("name",)}
-    autocomplete_fields = ("category",)

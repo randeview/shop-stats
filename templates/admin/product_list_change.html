@@ -1,0 +1,15 @@
+{# templates/admin/catalog/category/change_list.html #}
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+{% block content %}
+<div class="form-group mt-3">
+    <button type="submit" name="import-product-catalog" class="btn btn-outline-success btn-lg w-100">
+        <ul class="object-tools">
+            <li><a href="{% url 'admin:catalog_category_product_import' %}" class="button">
+                {% trans "Импортировать ТОВАРЫ" %}
+            </a></li>
+        </ul>
+    </button>
+</div>
+{{ block.super }}
+{% endblock %}

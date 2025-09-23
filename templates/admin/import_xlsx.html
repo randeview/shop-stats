@@ -2,10 +2,10 @@
 {% extends "admin/base_site.html" %}
 {% load i18n %}
 {% block content %}
-  <h1>{% trans "Import categories from XLSX" %}</h1>
+  <h1>{% trans "Импортировать категории и товары с XLSX" %}</h1>
   <form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
     <table>{{ form.as_table }}</table>
-    <input type="submit" class="default" value="{% trans 'Upload & Import' %}">
+    <input type="submit" class="default" value="{% trans 'Загрузить & Импортировать' %}">
   </form>
 {% endblock %}
