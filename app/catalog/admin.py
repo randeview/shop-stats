@@ -40,12 +40,10 @@ class CategoryAdmin(admin.ModelAdmin):
         if request.method == "POST":
             form = CategoryImportForm(request.POST, request.FILES)
             if form.is_valid():
-
-                import_categories_from_xlsx(
+                created = import_categories_from_xlsx(
                     file_obj=form.cleaned_data["file"],
                     sheet_name=form.cleaned_data.get("sheet_name") or None,
                 )
-                created = 1
                 self.message_user(
                     request,
                     _(
