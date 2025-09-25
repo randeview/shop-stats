@@ -20,6 +20,7 @@ class AggregatedProductSerializer(serializers.Serializer):
     article_id = serializers.CharField()
     photo_url = serializers.CharField(allow_null=True)
     name = serializers.CharField()
+    category = serializers.IntegerField()
     category_name = serializers.CharField()
     absolut_position = serializers.IntegerField(default=1)
     merchant_count = serializers.IntegerField()

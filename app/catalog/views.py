@@ -1,11 +1,23 @@
+from datetime import datetime
+from io import BytesIO
+
+from django.http import HttpResponse
 from django_filters.rest_framework import FilterSet, NumberFilter
-from drf_spectacular.utils import OpenApiParameter, OpenApiTypes, extend_schema
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    OpenApiTypes,
+    extend_schema,
+)
+from openpyxl import Workbook
 from rest_framework import generics, permissions
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from app.catalog.models import Category, Product
 from app.catalog.serializers import AggregatedProductSerializer, CategoryTreeSerializer
+from app.catalog.services import aggregate_products
 
 
 class HundredPagination(PageNumberPagination):
@@ -70,7 +82,7 @@ class ProductFilter(FilterSet):
     ],
     responses=AggregatedProductSerializer(many=True),
 )
-class ProductListView(generics.ListAPIView):
+class ProductAggregatedListView(generics.ListAPIView):
     # permission_classes = [permissions.IsAuthenticated, DeviceBound, HasPaidService]
     permission_classes = [permissions.AllowAny]
     pagination_class = HundredPagination
@@ -81,104 +93,95 @@ class ProductListView(generics.ListAPIView):
         return qs
 
     def list(self, request, *args, **kwargs):
-        qs = Product.objects.values(
-            "photo_url",
-            "name",
-            "category",
-            "category__name",
-            "article_id",
-            "merchant_name",
-            "product_count",
-            "product_orders",
-            "gmv",
-        )
-        # --- Filtering by category ---
-        category_id = request.query_params.get("category_id")
-        if category_id:
-            qs = qs.filter(category_id=category_id)
-
-        agg = {}
-        for r in qs:
-            key = r["article_id"]
-            if key not in agg:
-                agg[key] = {
-                    "photo_url": r["photo_url"],
-                    "name": r["name"],
-                    "category": r["category"],
-                    "category_name": r["category__name"],
-                    "article_id": key,
-                    "merchant_names": set(),
-                    "product_count": 0,
-                    "product_orders": 0,
-                    "gmv_sum": 0,
-                }
-            g = agg[key]
-            g["merchant_names"].add(r["merchant_name"])
-            g["product_count"] += r["product_count"] or 0
-            g["product_orders"] += r["product_orders"] or 0
-            g["gmv_sum"] += r["gmv"] or 0
-
-        # finalize
-        data = []
-        for g in agg.values():
-            names = sorted(g["merchant_names"])
-            product_count = g["product_count"]
-            data.append(
-                {
-                    "photo_url": (
-                        g["photo_url"]
-                        if g["photo_url"]
-                        else "https://resources.cdn-kaspi.kz/img/m/p/h98/h2c/84198210273310.jpg?format=preview-large"
-                    ),
-                    "name": g["name"],
-                    "category": g["category"],
-                    "category_name": g["category_name"],
-                    "article_id": g["article_id"],
-                    "merchant_count": len(names),
-                    "merchant_names": names,
-                    "product_count": product_count,
-                    "product_orders": g["product_orders"],
-                    "gmv_sum": g["gmv_sum"],
-                    "gmv_each": (g["gmv_sum"] / product_count) if product_count else 0,
-                }
-            )
-        # --- Merchant count filters ---
-        min_count = request.query_params.get("min_merchant_count")
-        max_count = request.query_params.get("max_merchant_count")
-        if min_count is not None:
-            data = [d for d in data if d["merchant_count"] >= int(min_count)]
-        if max_count is not None:
-            data = [d for d in data if d["merchant_count"] <= int(max_count)]
-
-        # --- Product orders filters ---
-        min_orders = request.query_params.get("min_product_orders")
-        max_orders = request.query_params.get("max_product_orders")
-        if min_orders is not None:
-            data = [d for d in data if d["product_orders"] >= int(min_orders)]
-        if max_orders is not None:
-            data = [d for d in data if d["product_orders"] <= int(max_orders)]
-
-        # --- Product orders filters ---
-        min_gmv = request.query_params.get("min_gmv_sum")
-        max_gmv = request.query_params.get("max_gmv_sum")
-        if min_gmv is not None:
-            data = [d for d in data if d["gmv_sum"] >= int(min_gmv)]
-        if max_gmv is not None:
-            data = [d for d in data if d["gmv_sum"] <= int(max_gmv)]
-        # --- Search filter ---
-        search = request.query_params.get("search")
-        if search:
-            search_lower = search.lower()
-            data = [
-                d
-                for d in data
-                if search_lower in (d["name"] or "").lower()
-                or search_lower in (d["category_name"] or "").lower()
-            ]
-        # --- Pagination ---
+        data = aggregate_products(request)
         page = self.paginate_queryset(data)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(data, many=True)
         return Response(serializer.data)
+
+
+@extend_schema(
+    tags=["catalog"],
+    summary="Aggregated products (XLSX export)",
+    responses={200: OpenApiResponse(description="XLSX file download")},
+    description="Flat list of products with filters; use ordering for sort.",
+    parameters=[
+        OpenApiParameter(
+            "search",
+            OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            description="Search by name/category name",
+        ),
+        OpenApiParameter("category_id", OpenApiTypes.INT, OpenApiParameter.QUERY),
+        OpenApiParameter(
+            "min_merchant_count", OpenApiTypes.INT, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "max_merchant_count", OpenApiTypes.INT, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "min_product_orders", OpenApiTypes.INT, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "max_product_orders", OpenApiTypes.INT, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter("min_gmv_sum", OpenApiTypes.INT, OpenApiParameter.QUERY),
+        OpenApiParameter("max_gmv_sum", OpenApiTypes.INT, OpenApiParameter.QUERY),
+    ],
+)
+class ProductAggregatedExportXLSXView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        data = aggregate_products(request)
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Products"
+
+        headers = [
+            "photo_url",
+            "name",
+            "category_name",
+            "article_id",
+            "merchant_count",
+            "merchant_names",
+            "product_count",
+            "product_orders",
+            "gmv_sum",
+            "gmv_each",
+        ]
+        ws.append(headers)
+
+        for row in data:
+            ws.append(
+                [
+                    row["photo_url"],
+                    row["name"],
+                    row["category_name"],
+                    row["article_id"],
+                    row["merchant_count"],
+                    ", ".join(row["merchant_names"]),
+                    row["product_count"],
+                    row["product_orders"],
+                    row["gmv_sum"],
+                    float(f'{row["gmv_each"]:.4f}'),
+                ]
+            )
+
+        buf = BytesIO()
+        wb.save(buf)
+        wb.close()
+        buf.seek(0)
+
+        filename = (
+            f'products_aggregated_{datetime.utcnow().strftime("%Y%m%d_%H%M%S")}.xlsx'
+        )
+        resp = HttpResponse(
+            buf.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        resp["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return resp
