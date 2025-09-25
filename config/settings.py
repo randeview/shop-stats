@@ -84,7 +84,6 @@ TEMPLATES = [
     },
 ]
 
-
 WSGI_APPLICATION = "config.wsgi.application"
 
 
@@ -170,6 +169,8 @@ REST_FRAMEWORK = {
         "anon": "30/min",
         "user": "120/min",
     },
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 100,
 }
 
 SIMPLE_JWT = {
@@ -249,6 +250,9 @@ JAZZMIN_SETTINGS = {
         "auth.user": "collapsible",
     },
     "order_with_respect_to": ["auth", "users", "catalog"],
+}
+JAZZMIN_UI_TWEAKS = {
+    "theme": "cyborg",
 }
 
 LANGUAGES = [

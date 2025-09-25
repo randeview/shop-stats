@@ -28,13 +28,14 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = (
+        "article_id",
         "name",
         "category",
         "merchant_name",
-        "article_id",
+        "gmv",
     )
     list_filter = ("category",)
-    search_fields = ("name",)
+    search_fields = ("name", "article_id")
     autocomplete_fields = ("category",)
     change_list_template = "admin/product_list_change.html"
 

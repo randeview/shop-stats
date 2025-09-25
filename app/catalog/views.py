@@ -1,14 +1,16 @@
-from django_filters.rest_framework import (
-    CharFilter,
-    DjangoFilterBackend,
-    FilterSet,
-    NumberFilter,
-)
-from drf_spectacular.utils import OpenApiParameter, OpenApiTypes, extend_schema
-from rest_framework import filters, generics, permissions
+from django_filters.rest_framework import FilterSet, NumberFilter
+from drf_spectacular.utils import extend_schema
+from rest_framework import generics, permissions
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 from app.catalog.models import Category, Product
 from app.catalog.serializers import CategoryTreeSerializer, ProductSerializer
+
+
+class HundredPagination(PageNumberPagination):
+    page_size = 100
+    max_page_size = 1000  # optional if you allow client override with ?page_size=
 
 
 @extend_schema(
@@ -30,55 +32,30 @@ class CategoryTreeView(generics.ListAPIView):
 
 class ProductFilter(FilterSet):
     category_id = NumberFilter(field_name="category_id", lookup_expr="exact")
-    category_slug = CharFilter(method="filter_category_slug")
-    min_price = NumberFilter(field_name="price", lookup_expr="gte")
-    max_price = NumberFilter(field_name="price", lookup_expr="lte")
-    min_rating = NumberFilter(field_name="rating", lookup_expr="gte")
-    max_rating = NumberFilter(field_name="rating", lookup_expr="lte")
-
-    def filter_category_slug(self, queryset, name, value):
-        return queryset.filter(category__slug=value)
 
     class Meta:
         model = Product
-        fields = ["category_id", "min_price", "max_price", "min_rating", "max_rating"]
+        fields = [
+            "category_id",
+        ]
 
 
 @extend_schema(
     tags=["catalog"],
     summary="List products",
     description="Flat list of products with filters; use ordering for sort.",
-    parameters=[
-        OpenApiParameter(
-            "search",
-            OpenApiTypes.STR,
-            location=OpenApiParameter.QUERY,
-            description="Search by name/slug/category name",
-        ),
-        OpenApiParameter(
-            "ordering",
-            OpenApiTypes.STR,
-            location=OpenApiParameter.QUERY,
-            description="Sort by: absolute_position, price, sales_30d, rating, created_at (prefix with '-' for desc)",
-        ),
-        OpenApiParameter("category_id", OpenApiTypes.INT, OpenApiParameter.QUERY),
-        OpenApiParameter("category_slug", OpenApiTypes.STR, OpenApiParameter.QUERY),
-        OpenApiParameter("min_price", OpenApiTypes.NUMBER, OpenApiParameter.QUERY),
-        OpenApiParameter("max_price", OpenApiTypes.NUMBER, OpenApiParameter.QUERY),
-        OpenApiParameter("min_rating", OpenApiTypes.NUMBER, OpenApiParameter.QUERY),
-        OpenApiParameter("max_rating", OpenApiTypes.NUMBER, OpenApiParameter.QUERY),
-    ],
     responses=ProductSerializer(many=True),
 )
 class ProductListView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
+    pagination_class = HundredPagination
     # permission_classes = [permissions.IsAuthenticated, DeviceBound, HasPaidService]
     serializer_class = ProductSerializer
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.SearchFilter,
-        filters.OrderingFilter,
-    ]
+    # filter_backends = [
+    #     DjangoFilterBackend,
+    #     filters.SearchFilter,
+    #     filters.OrderingFilter,
+    # ]
     filterset_class = ProductFilter
     search_fields = ["name", "category__name"]
     ordering_fields = [
@@ -90,3 +67,60 @@ class ProductListView(generics.ListAPIView):
         # Keep it efficient
         qs = Product.objects.select_related("category").all()
         return qs
+
+    def list(self, request, *args, **kwargs):
+        rows = Product.objects.values(
+            "photo_url",
+            "name",
+            "category__name",
+            "article_id",
+            "merchant_name",
+            "product_count",
+            "product_orders",
+            "gmv",
+        )
+
+        agg = {}
+        for r in rows:
+            key = r["article_id"]
+            if key not in agg:
+                agg[key] = {
+                    "photo_url": r["photo_url"],
+                    "name": r["name"],
+                    "category_name": r["category__name"],
+                    "article_id": key,
+                    "merchant_names": set(),
+                    "product_count": 0,
+                    "product_orders": 0,
+                    "gmv_sum": 0,
+                }
+            g = agg[key]
+            g["merchant_names"].add(r["merchant_name"])
+            g["product_count"] += r["product_count"] or 0
+            g["product_orders"] += r["product_orders"] or 0
+            g["gmv_sum"] += r["gmv"] or 0
+
+        # finalize
+        data = []
+        for g in agg.values():
+            names = sorted(g["merchant_names"])
+            product_count = g["product_count"]
+            data.append(
+                {
+                    "photo_url": g["photo_url"],
+                    "name": g["name"],
+                    "category_name": g["category_name"],
+                    "article_id": g["article_id"],
+                    "merchant_count": len(names),
+                    "merchant_names": names,
+                    "product_count": product_count,
+                    "product_orders": g["product_orders"],
+                    "gmv_sum": g["gmv_sum"],
+                    "gmv_each": (g["gmv_sum"] / product_count) if product_count else 0,
+                }
+            )
+
+        page = self.paginate_queryset(data)
+        if page is not None:
+            return self.get_paginated_response(page)
+        return Response(data)

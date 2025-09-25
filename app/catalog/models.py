@@ -2,6 +2,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from app.common.mixins import TimeStampMixin
+
 
 def validate_max_depth(parent):
     """
@@ -70,7 +72,7 @@ class Category(models.Model):
         return " / ".join(reversed(parts))
 
 
-class Product(models.Model):
+class Product(TimeStampMixin):
     category = models.ForeignKey(
         Category,
         verbose_name=_("category"),
@@ -87,9 +89,7 @@ class Product(models.Model):
     )
     product_count = models.PositiveIntegerField(_("count"), default=0)
     product_orders = models.PositiveIntegerField(_("product orders"), default=0)
-
-    created_at = models.DateTimeField(_("created at"), auto_now_add=True)
-    updated_at = models.DateTimeField(_("updated at"), auto_now=True)
+    gmv = models.PositiveIntegerField(_("GMV"), default=0)
 
     class Meta:
         verbose_name = _("Product")

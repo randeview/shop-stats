@@ -51,6 +51,7 @@ def import_categories_from_xlsx(file_obj, sheet_name: Optional[str] = None) -> i
             c6_idx = header.index("SKU")
             c7_idx = header.index("Кол-во товаров")
             c8_idx = header.index("Кол-во заказов")
+            c9_idx = header.index("GMV")
         except ValueError:
             wb.close()
             raise ValueError(
@@ -72,6 +73,7 @@ def import_categories_from_xlsx(file_obj, sheet_name: Optional[str] = None) -> i
                 article_id = _norm(row[c6_idx])
                 product_count = _norm(row[c7_idx])
                 product_orders = _norm(row[c8_idx])
+                gmv = _norm(row[c9_idx])
 
                 if lvl1 == "PARENT_CATEGORY":
                     continue
@@ -117,9 +119,10 @@ def import_categories_from_xlsx(file_obj, sheet_name: Optional[str] = None) -> i
                         article_id=article_id,
                         product_count=product_count,
                         product_orders=product_orders,
+                        gmv=gmv,
                     )
                     product.save()
-                if counter > 1000:
+                if counter > 7777:
                     break
 
         wb.close()

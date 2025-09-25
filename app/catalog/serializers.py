@@ -18,17 +18,18 @@ class CategoryTreeSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
+    absolut_position = serializers.IntegerField(default=1, read_only=True)
 
     class Meta:
         model = Product
         fields = (
-            "id",
-            "name",
             "photo_url",
-            "category",
+            "name",
+            "category_name",
+            "absolut_position",
             "article_id",
+            "merchant_name",
             "product_count",
             "product_orders",
-            "category_name",
-            "created_at",
+            "gmv",
         )
